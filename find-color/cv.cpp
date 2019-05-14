@@ -5,12 +5,13 @@
 #include <cv.hpp>
 #include <highgui.h>
 #include <iostream>
+#include <map>
 
 int main( int argc, char** argv ) {
 	using namespace cv;
 	using namespace std;
 	
-	VideoCapture cap(2);
+	VideoCapture cap(0);
 	
 	vector<int>lower_b = {110,170,109};
 	vector<int>upper_b = {132,255,255};
@@ -54,35 +55,19 @@ int main( int argc, char** argv ) {
 			imshow( "erode", selected );
 			dilate(selected, selected, structelem);
 			imshow( "dilate", selected );
+			vector<vector<Point> > contours;
+			vector<Vec4i> hierarchy;
+			findContours( selected, contours,hierarchy , CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE, Point(0, 0) );
+			for (int i = 0; i < contours.size(); i++) drawContours(frame, contours, i, Scalar(0,255,0) ,2);
+			imshow( "cont", frame );
 			
-			
+			for (auto &contour: contours) {
+				Moments m = moments(contour);
+				cout << "( " << (m.m10/m.m00) << ", " << (m.m01/m.m00) << ") "  ;
+			}
+			cout << endl;
 
 			
-			/*
-			Mat bwimage;
-			cvtColor(frame, bwimage, CV_RGB2GRAY);
-			imshow( "B", bwimage );
-			
-			
-			Mat thresh;
-			threshold(bwimage, thresh, 127,255,THRESH_BINARY);
-			imshow( "C", thresh );
-			
-			Mat thresh2;
-			adaptiveThreshold(bwimage, thresh2, 255,  ADAPTIVE_THRESH_GAUSSIAN_C, 
-			THRESH_BINARY, 3, 2);
-			imshow( "CD", thresh2 );
-			int dilation_size = 1;
-			Mat structelem = getStructuringElement( MORPH_ELLIPSE,
-				   Size( 2*dilation_size + 1, 2*dilation_size+1 ),
-					Point( dilation_size, dilation_size ) );
-			Mat thresh2dil;
-			erode(thresh, thresh2dil, structelem);
-			imshow( "erode", thresh2dil );
-			dilate(thresh2dil, thresh2dil, structelem);
-			imshow( "dilate", thresh2dil );
-			
-			*/
 		} else {
 			break;
 		}
